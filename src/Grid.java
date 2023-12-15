@@ -22,21 +22,32 @@ public class Grid {
     public void initializeGrid() {
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
-                grid[i][j] = new EmptyCell();
+                grid[i][j] = new EmptyCell('-');
             }
         }
     }
 
     public void printGrid() {
-        System.out.println("   1 2 3 4 5 6 7 8 9 10");
-        System.out.println("  ---------------------");
+        int rowNumberWidth = String.valueOf(gridSize).length();
+
+        System.out.print("     ");
+        for (int col = 1; col <= gridSize; col++) {
+            System.out.print(col + " ");
+        }
+        System.out.println();
+        System.out.println("  -----------------------");
         for (int i = 0; i < gridSize; i++) {
-            System.out.print((i + 1) + "| ");
+            System.out.printf("%" + rowNumberWidth + "d | ", i + 1);
             for (int j = 0; j < gridSize; j++) {
-                System.out.print(grid[i][j].getDisplayValue() + " ");
+                Cell cell = grid[i][j];
+                if (cell.isFlagged()) {
+                    System.out.print("F ");
+                } else {
+                    System.out.print(cell.getDisplayValue() + " ");
+                }
             }
             System.out.println();
         }
-        System.out.println("  ---------------------");
+        System.out.println("  -----------------------");
     }
 }

@@ -1,15 +1,6 @@
-public class Cell {
-    private char displayValue;
-
-    public Cell(char displayValue) {
-        this.displayValue = displayValue;
-    }
-
-    public char getDisplayValue() {
-        return displayValue;
-    }
-
-    public void setDisplayValue(char displayValue) {
-        this.displayValue = displayValue;
-    }
+public interface Cell {
+    char getDisplayValue();
+    void setDisplayValue(char displayValue);
+    boolean isFlagged();
+    void setFlagged(boolean flagged);
 }

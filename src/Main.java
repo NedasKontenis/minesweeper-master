@@ -2,38 +2,66 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        int gridSize = 10;
-        int numMines = 15;
+        GameConfig config = GameConfig.getInstance(10, 15);
 
-        Grid grid = new Grid(gridSize);
-        Mine mine = new Mine(numMines, grid);
-        GameService gameService = new GameService(mine, grid);
+        Grid grid = new Grid(config.getGridSize());
+        Mine mine = new Mine(config.getNumMines(), grid);
+        GameService gameService = new GameService(grid);
         GameRules gameRules = new GameRules(mine, grid);
+        PowerUp extraLife = new ExtraLife();
+        PowerUp extraMine = new ExtraMine();
+        GameInvoker invoker = new GameInvoker();
 
         grid.initializeGrid();
         mine.initializeMineField(grid.getGridSize());
 
-        grid.printGrid();
         Scanner scanner = new Scanner(System.in);
+        int attempt = 0;
 
-        while (!gameRules.isGameOver()) {
+        while (gameRules.hasLives()) {
+            if (attempt == 0) {
+                gameService.applyPowerUp(extraMine, gameRules);
+            }
+            else if (attempt % 10 == 0) {
+                gameService.applyPowerUp(extraLife, gameRules);
+            }
 
-            System.out.print("Enter row and column (e.g., 1 2): ");
-            int row = scanner.nextInt() - 1;
-            int col = scanner.nextInt() - 1;
+            grid.printGrid();
+            System.out.print("Enter row and column to open cell or 'F' to toggle a flag (e.g., 1 2 or F 1 2): ");
+            String input = scanner.nextLine();
+            String[] parts = input.split(" ");
 
-            if (gameRules.hasHitMine(row, col)){
-                System.out.println("Game is over! You hit a mine!");
-                break;
-            } else {
-                gameService.processCells(row, col);
-                grid.printGrid();
+            if (parts.length == 3 && parts[0].equalsIgnoreCase("F")) {
+                int row = Integer.parseInt(parts[1]) - 1;
+                int col = Integer.parseInt(parts[2]) - 1;
+                Command placeFlag = new PlaceFlagCommand(gameService, row, col);
+                invoker.executeCommand(placeFlag);
+            } else if (parts.length == 2) {
+                int row = Integer.parseInt(parts[0]) - 1;
+                int col = Integer.parseInt(parts[1]) - 1;
 
-                if (gameRules.isGameWon()) {
-                    System.out.println("Congratulations! You win!");
-                    break;
+                if (gameRules.hasHitMine(row, col)) {
+                    gameService.revealHitMine(row, col);
+                    gameRules.loseLife();
+                    if (gameRules.hasLives()) {
+                        System.out.println("You hit a mine! Lives remaining: " + gameRules.getLives());
+                    } else {
+                        gameService.revealAllMines();
+                        grid.printGrid();
+                        System.out.println("Game over! You have no more lives.");
+                        break;
+                    }
+                } else {
+                    gameService.processCells(row, col);
+
+                    if (gameRules.isGameOver()) {
+                        grid.printGrid();
+                        System.out.println("Congratulations! You win!");
+                        break;
+                    }
                 }
             }
+            attempt++;
         }
 
         scanner.close();
