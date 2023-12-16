@@ -1,7 +1,7 @@
-// Command for placing a flag
 public class PlaceFlagCommand implements Command {
     private GameService gameService;
-    private int row, col;
+    private int row;
+    private int col;
 
     public PlaceFlagCommand(GameService gameService, int row, int col) {
         this.gameService = gameService;
